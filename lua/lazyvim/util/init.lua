@@ -17,6 +17,7 @@ local LazyUtil = require("lazy.core.util")
 ---@field json lazyvim.util.json
 ---@field lualine lazyvim.util.lualine
 ---@field mini lazyvim.util.mini
+---@field pick lazyvim.util.pick
 ---@field cmp lazyvim.util.cmp
 local M = {}
 
@@ -73,6 +74,12 @@ end
 ---@param plugin string
 function M.has(plugin)
   return M.get_plugin(plugin) ~= nil
+end
+
+---@param extra string
+function M.has_extra(extra)
+  local modname = "lazyvim.plugins.extras." .. extra
+  return vim.tbl_contains(require("lazy.core.config").spec.modules, modname)
 end
 
 ---@param fn fun()
@@ -259,6 +266,21 @@ for _, level in ipairs({ "info", "warn", "error" }) do
     opts = opts or {}
     opts.title = opts.title or "LazyVim"
     return LazyUtil[level](msg, opts)
+  end
+end
+
+local cache = {} ---@type table<(fun()), table<string, any>>
+---@generic T: fun()
+---@param fn T
+---@return T
+function M.memoize(fn)
+  return function(...)
+    local key = vim.inspect({ ... })
+    cache[fn] = cache[fn] or {}
+    if cache[fn][key] == nil then
+      cache[fn][key] = fn(...)
+    end
+    return cache[fn][key]
   end
 end
 

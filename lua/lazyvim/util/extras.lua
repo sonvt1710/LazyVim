@@ -37,7 +37,9 @@ M.ns = vim.api.nvim_create_namespace("lazyvim.extras")
 ---@type string[]
 M.state = nil
 
----@param opts {ft?: string|string[], root?: string|string[]}
+---@alias WantsOpts {ft?: string|string[], root?: string|string[]}
+
+---@param opts WantsOpts
 ---@return boolean
 function M.wants(opts)
   if opts.ft then
@@ -105,10 +107,12 @@ function M.get_extra(source, modname)
   table.sort(plugins)
   table.sort(optional)
 
-  ---@type boolean|(fun():boolean?)|nil
+  ---@type boolean|(fun():boolean?)|nil|WantsOpts
   local recommended = require(modname).recommended or false
   if type(recommended) == "function" then
     recommended = recommended() or false
+  elseif type(recommended) == "table" then
+    recommended = M.wants(recommended)
   end
 
   ---@type LazyExtra
@@ -263,17 +267,17 @@ function X:extra(extra)
     self.text:append(" "):append(LazyConfig.options.ui.icons.favorite or " ", "LazyCommit")
   end
   if extra.source.name ~= "LazyVim" then
-    self.text:append(" "):append(LazyConfig.options.ui.icons.event .. " " .. extra.source.name, "LazyReasonEvent")
+    self.text:append(" "):append(LazyConfig.options.ui.icons.event .. extra.source.name, "LazyReasonEvent")
   end
   for _, import in ipairs(extra.imports) do
     import = import:gsub("^lazyvim.plugins.extras.", "")
-    self.text:append(" "):append(LazyConfig.options.ui.icons.plugin .. "" .. import, "LazyReasonStart")
+    self.text:append(" "):append(LazyConfig.options.ui.icons.plugin .. import, "LazyReasonStart")
   end
   for _, plugin in ipairs(extra.plugins) do
-    self.text:append(" "):append(LazyConfig.options.ui.icons.plugin .. "" .. plugin, "LazyReasonPlugin")
+    self.text:append(" "):append(LazyConfig.options.ui.icons.plugin .. plugin, "LazyReasonPlugin")
   end
   for _, plugin in ipairs(extra.optional) do
-    self.text:append(" "):append(LazyConfig.options.ui.icons.plugin .. "" .. plugin, "LazyReasonRequire")
+    self.text:append(" "):append(LazyConfig.options.ui.icons.plugin .. plugin, "LazyReasonRequire")
   end
   if extra.desc then
     self.text:nl():append("    " .. extra.desc, "LazyComment")

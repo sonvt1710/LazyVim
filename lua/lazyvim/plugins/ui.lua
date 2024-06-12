@@ -92,6 +92,10 @@ return {
             text_align = "left",
           },
         },
+        ---@param opts bufferline.IconFetcherOpts
+        get_element_icon = function(opts)
+          return LazyVim.config.icons.ft[opts.filetype]
+        end,
       },
     },
     config = function(_, opts)
@@ -133,7 +137,7 @@ return {
       local opts = {
         options = {
           theme = "auto",
-          globalstatus = true,
+          globalstatus = vim.o.laststatus == 3,
           disabled_filetypes = { statusline = { "dashboard", "alpha", "starter" } },
         },
         sections = {
@@ -262,16 +266,6 @@ return {
     main = "ibl",
   },
 
-  -- Displays a popup with possible key bindings of the command you started typing
-  {
-    "folke/which-key.nvim",
-    opts = function(_, opts)
-      if LazyVim.has("noice.nvim") then
-        opts.defaults["<leader>sn"] = { name = "+noice" }
-      end
-    end,
-  },
-
   -- Highly experimental plugin that completely replaces the UI for messages, cmdline and the popupmenu.
   {
     "folke/noice.nvim",
@@ -305,6 +299,7 @@ return {
     },
     -- stylua: ignore
     keys = {
+      { "<leader>sn", "", desc = "+noice"},
       { "<S-Enter>", function() require("noice").redirect(vim.fn.getcmdline()) end, mode = "c", desc = "Redirect Cmdline" },
       { "<leader>snl", function() require("noice").cmd("last") end, desc = "Noice Last Message" },
       { "<leader>snh", function() require("noice").cmd("history") end, desc = "Noice History" },
@@ -348,11 +343,11 @@ return {
           header = vim.split(logo, "\n"),
           -- stylua: ignore
           center = {
-            { action = LazyVim.telescope("files"),                       desc = " Find File",       icon = " ", key = "f" },
+            { action = LazyVim.pick(),                                   desc = " Find File",       icon = " ", key = "f" },
             { action = "ene | startinsert",                              desc = " New File",        icon = " ", key = "n" },
-            { action = "Telescope oldfiles",                             desc = " Recent Files",    icon = " ", key = "r" },
-            { action = "Telescope live_grep",                            desc = " Find Text",       icon = " ", key = "g" },
-            { action = [[lua LazyVim.telescope.config_files()()]],       desc = " Config",          icon = " ", key = "c" },
+            { action = LazyVim.pick("oldfiles"),                         desc = " Recent Files",    icon = " ", key = "r" },
+            { action = LazyVim.pick("live_grep"),                        desc = " Find Text",       icon = " ", key = "g" },
+            { action = LazyVim.pick.config_files(),                      desc = " Config",          icon = " ", key = "c" },
             { action = 'lua require("persistence").load()',              desc = " Restore Session", icon = " ", key = "s" },
             { action = "LazyExtras",                                     desc = " Lazy Extras",     icon = " ", key = "x" },
             { action = "Lazy",                                           desc = " Lazy",            icon = "󰒲 ", key = "l" },

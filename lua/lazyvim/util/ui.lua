@@ -34,7 +34,7 @@ function M.get_signs(buf, lnum)
   )
   for _, extmark in pairs(extmarks) do
     signs[#signs + 1] = {
-      name = extmark[4].sign_hl_group or "",
+      name = extmark[4].sign_hl_group or extmark[4].sign_name or "",
       text = extmark[4].sign_text,
       texthl = extmark[4].sign_hl_group,
       priority = extmark[4].priority,
@@ -103,9 +103,11 @@ function M.statuscolumn()
   local use_githl = vim.g.lazyvim_statuscolumn and vim.g.lazyvim_statuscolumn.folds_githl
 
   if show_signs then
+    local signs = M.get_signs(buf, vim.v.lnum)
+
     ---@type Sign?,Sign?,Sign?
     local left, right, fold, githl
-    for _, s in ipairs(M.get_signs(buf, vim.v.lnum)) do
+    for _, s in ipairs(signs) do
       if s.name and (s.name:find("GitSign") or s.name:find("MiniDiffSign")) then
         right = s
         if use_githl then
@@ -114,9 +116,6 @@ function M.statuscolumn()
       else
         left = s
       end
-    end
-    if vim.v.virtnum ~= 0 then
-      left = nil
     end
 
     vim.api.nvim_win_call(win, function()
